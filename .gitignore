@@ -1,0 +1,99 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# 仮想環境
+.venv/
+venv/
+env/
+ENV/
+
+# 配布・ビルド
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# テスト・カバレッジ
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# mypy / 型チェック
+.mypy_cache/
+.dmypy.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ===========================
+# 環境変数・シークレット
+# ===========================
+.env
+.env.*
+*.env
+secrets.json
+secrets.yaml
+
+# ===========================
+# データ・モデル（重いやつ）
+# ===========================
+*.csv
+*.tsv
+*.parquet
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# GISデータ（追加）
+*.shp
+*.dbf
+*.shx
+*.prj
+*.cpg
+*.qpj
+
+# データ一般
+data/
+
+# ===========================
+# ログ・一時ファイル
+# ===========================
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# ===========================
+# WSL / Windows固有
+# ===========================
+*:Zone.Identifier
+Thumbs.db
+Desktop.ini
+
+# ===========================
+# エディタ
+# ===========================
+.vscode/
+.idea/
+*.code-workspace
+
+# ===========================
+# OS
+# ===========================
+.DS_Store
