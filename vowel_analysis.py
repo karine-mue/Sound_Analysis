@@ -21,8 +21,50 @@ for i, (start, end) in enumerate(intervals):
 
 
 # --- LPCフォルマント推定（order=50） ---
+# def lpc_formants(segment, sr, order=50):
+#     a = librosa.lpc(segment, order=order)
+#     roots = np.roots(a)
+#     roots = roots[np.imag(roots) >= 0]
+#     angles = np.angle(roots)
+#     freqs = np.sort(angles * (sr / (2 * np.pi)))
+#     freqs = freqs[freqs > 80]
+#     result = {}
+#     for j in range(min(4, len(freqs))):
+#         result[f"F{j+1}"] = freqs[j]
+#     return result
+
+# --- LPCフォルマント推定（order=50）改　母音のうち「う」と「お」が落ちる問題。 ---
+# 原因は不明だが、segmentのRMSが低いフレームが多いとlpcの係数にNaNやInfが入ることがある。
+# そこで、segmentの中央50%を取った後、さらにRMSが低いフレームを除去してからlpc_formantsを呼び出すように変更してみる。
+# lpc_formantsの中でinfが出ているはずなので、関数内部にtry/exceptを追加してどのステップで死んでいるか確認してみる。
+# def lpc_formants(segment, sr, order=50):
+#     a = librosa.lpc(segment, order=order)
+#     print(f"    lpc done, a has inf: {np.any(np.isinf(a))}, nan: {np.any(np.isnan(a))}")
+#     roots = np.roots(a)
+#     print(f"    roots done, has inf: {np.any(np.isinf(roots))}, nan: {np.any(np.isnan(roots))}")
+#     roots = roots[np.imag(roots) >= 0]
+#     angles = np.angle(roots)
+#     freqs = np.sort(angles * (sr / (2 * np.pi)))
+#     freqs = freqs[freqs > 80]
+#     result = {}
+#     for j in range(min(4, len(freqs))):
+#         result[f"F{j+1}"] = freqs[j]
+#     return result
+
+# --- LPCフォルマント推定（order=50）改2　母音のうち「う」と「お」が落ちる問題。 ---
+# librosa.lpcがNaNを返している。
+# seg02（う）とseg04（お）でのみa has nan: True。lpc自体が死んでいる。
+# librosa.lpcはorder=50で長いセグメントに対してlevinson-durbin再帰を使うが、特定の音声特性（うとおは唇を丸めた円唇母音）で自己相関行列が数値的に特異になるケースがある。
+# 対処：orderを下げてフォールバックする
 def lpc_formants(segment, sr, order=50):
-    a = librosa.lpc(segment, order=order)
+    # orderを下げながらリトライ
+    for o in [order, 30, 20, 16]:
+        a = librosa.lpc(segment, order=o)
+        if not (np.any(np.isnan(a)) or np.any(np.isinf(a))):
+            break
+    else:
+        raise ValueError("LPC failed at all orders")
+    
     roots = np.roots(a)
     roots = roots[np.imag(roots) >= 0]
     angles = np.angle(roots)
