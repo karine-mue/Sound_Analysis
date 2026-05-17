@@ -44,6 +44,22 @@ for i, (start, end) in enumerate(intervals):
     core = segment[trim_start:trim_end]
 
     order = 50
+
+    # 中央50%を取った後、さらにRMSが低いフレームを除去
+    frame_length = 2048
+    hop = 512
+    rms = librosa.feature.rms(y=core, frame_length=frame_length, hop_length=hop)[0]
+    threshold = np.percentile(rms, 30)  # 下位30%を除去
+    active_frames = np.where(rms >= threshold)[0]
+
+    if len(active_frames) == 0:
+        print(f"seg{i:02d}: no active frames, skip")
+        continue
+
+    # active frameに対応するサンプルだけ使う
+    start_sample = active_frames[0] * hop
+    end_sample = min(active_frames[-1] * hop + frame_length, len(core))
+    core = core[start_sample:end_sample]
     
     if len(core) < order + 10:
         print(f"seg{i:02d}: too short, skip")
