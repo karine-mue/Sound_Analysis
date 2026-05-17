@@ -19,6 +19,7 @@ for i, (start, end) in enumerate(intervals):
     duration = (end - start) / sr
     print(f"  seg{i:02d}: {start/sr:.2f}s - {end/sr:.2f}s  ({duration:.2f}s)")
 
+
 # --- LPCフォルマント推定（order=50） ---
 def lpc_formants(segment, sr, order=50):
     a = librosa.lpc(segment, order=order)
@@ -67,6 +68,13 @@ for i, (start, end) in enumerate(intervals):
     
     try:
         #order = 50
+
+        # lpc_formants呼び出し直前に追加(RMSが低いフレームを除去した後のcoreに対して)
+        core = core / (np.max(np.abs(core)) + 1e-8)  # 正規化
+
+        # coreのRMS統計を出力（lpc_formants呼び出し前に追加）
+        print(f"  core length: {len(core)/sr:.2f}s  RMS max: {np.max(np.abs(core)):.4f}  NaN: {np.any(np.isnan(core))}  Inf: {np.any(np.isinf(core))}")
+
         formants = lpc_formants(core, sr, order=order)
         f0, _, _ = librosa.pyin(core, fmin=80, fmax=900, sr=sr)
         f0_valid = f0[~np.isnan(f0)]
